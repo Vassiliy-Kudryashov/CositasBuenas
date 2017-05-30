@@ -6,6 +6,7 @@ import java.awt.event.MouseListener;
 public class AnotherClass {
     //UIProperties, yes!!
     public static void main(String[] args) {
+
         System.out.println(System.getProperty("z"));
     }
 }
