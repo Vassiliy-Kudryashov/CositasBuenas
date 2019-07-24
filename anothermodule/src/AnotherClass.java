@@ -14,7 +14,9 @@ public class AnotherClass {
     }
 
     public void setA(int a) {
-        this.a = a;
+        if (a != this.a) {
+            this.a = a;
+        }
     }
 
     //UIProperties, yes!!sdjlksdklj
