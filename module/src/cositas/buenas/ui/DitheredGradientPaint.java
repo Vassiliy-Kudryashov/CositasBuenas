@@ -1,4 +1,4 @@
-package zacka.packa;
+package cositas.buenas.ui;
 
 import sun.awt.image.IntegerComponentRaster;
 

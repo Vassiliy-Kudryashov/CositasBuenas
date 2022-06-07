@@ -1,3 +1,5 @@
+import cositas.buenas.util.FileUtil;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -11,8 +13,7 @@ import java.io.IOException;
 public class Rainbow {
 
     public static void main(String[] args) throws IOException {
-        File base = new File("/Users/user/Pictures/colors/");
-        base.mkdirs();
+        File base = FileUtil.mkDirs("Pictures/colors/");
         for (int hue = 0; hue < 100; hue++) {
             final int side = (int)(100 * getRandom(.03, .4));
 
