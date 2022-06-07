@@ -8,13 +8,13 @@ import java.awt.event.KeyEvent;
 public class KeyEvents extends JFrame {
     public static void main(String[] args) {
         System.out.println("KeyEvents #" + System.currentTimeMillis() % 222);
-        KeyEvents  keyEvents = new KeyEvents();
+        KeyEvents keyEvents = new KeyEvents();
         final JLabel label = new JLabel();
-        keyEvents.setContentPane(label );//////////////////////////////////////////////////////////////////////////////////
+        keyEvents.setContentPane(label);//////////////////////////////////////////////////////////////////////////////////
         keyEvents.getContentPane().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                label.setText(""+e.getKeyCode() + " " + e.getKeyChar());
+                label.setText("" + e.getKeyCode() + " " + e.getKeyChar());
             }
         });
         keyEvents.setSize(500, 400);
@@ -28,68 +28,17 @@ public class KeyEvents extends JFrame {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 /**
  * getProperty("filterNewlines")
- sw
- sw
- s
- w
- s
- w
- sw
- s
- w
+ * sw
+ * sw
+ * s
+ * w
+ * s
+ * w
+ * sw
+ * s
+ * w
  */
 

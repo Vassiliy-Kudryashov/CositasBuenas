@@ -9,7 +9,8 @@ import java.util.TreeSet;
 public class FileUtil {
     public static File mkDirs(String subfolder) throws IOException {
         File dir = new File(new File(System.getProperty("user.home")), subfolder);
-        if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("Cannot make directory " + dir.getAbsolutePath());
+        if (!dir.isDirectory() && !dir.mkdirs())
+            throw new IOException("Cannot make directory " + dir.getAbsolutePath());
         return dir;
     }
 }

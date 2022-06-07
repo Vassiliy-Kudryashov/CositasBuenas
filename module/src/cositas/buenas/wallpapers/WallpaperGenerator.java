@@ -79,20 +79,24 @@ public class WallpaperGenerator {
             });
         }
         executor.shutdown();
-        executor.awaitTermination(10, TimeUnit.MINUTES);
-        Toolkit.getDefaultToolkit().beep();
+        if (executor.awaitTermination(10, TimeUnit.MINUTES)) {
+            Toolkit.getDefaultToolkit().beep();
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+            Toolkit.getDefaultToolkit().beep();
+        }
     }
 
     private static void generateImage(File pictures, int width, int height, int gap, List<Integer> rgbs, AtomicInteger counter, int total, int i) throws IOException {
         Color c1 = new Color(rgbs.get(i));
-        Color c2 = new Color(rgbs.get((i + 5)% total));
+        Color c2 = new Color(rgbs.get((i + 5) % total));
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
 //        graphics.setColor(c1);
         graphics.setPaint(new DitheredGradientPaint(0, height, c1, width, 0, c2));
         graphics.fillRect(0, 0, width + 1, height + 1);
         addNoise(graphics, width, height, gap);
-        ImageIO.write(image, "png", new File(pictures, String.format("%03d", (i +1)) + ".png"));
+        ImageIO.write(image, "png", new File(pictures, String.format("%03d", (i + 1)) + ".png"));
         System.out.println(counter.addAndGet(1) + "/" + total);
     }
 

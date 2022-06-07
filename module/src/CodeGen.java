@@ -10,12 +10,12 @@ import java.util.Map;
 public class CodeGen {
 
     public static final File BASE = new File("module/src/generated");
-    private static  Map<File, String> fileToMethod = new HashMap<File, String>();
+    private static Map<File, String> fileToMethod = new HashMap<File, String>();
 
     private int unused;
 
     public static void main(String[] args) {
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             File p = new File(BASE, "p" + i);
             p.mkdirs();
             for (int j = 0; j < 7; j++) {
@@ -29,7 +29,7 @@ public class CodeGen {
                     String methodName = "m" + name;
                     sb.append("  public static void " + methodName + "() {\n");
                     sb.append("//system.getErrors().addMessage(123)");
-                    if (Math.random()>.75) sb.append(" Rule123");
+                    if (Math.random() > .75) sb.append(" Rule123");
                     sb.append(";\n");
                     for (Map.Entry<File, String> entry : fileToMethod.entrySet()) {
                         File f = entry.getKey();
@@ -39,38 +39,11 @@ public class CodeGen {
                     fileToMethod.put(file, methodName);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     sb.append("  }\n");
                     sb.append("}");
                     String candidate = sb.toString();
-                    /*candidate = */candidate.replaceAll("<a href=\"#inspection/[\\w]+\">more\\.\\.\\.</a> \\(⌘F1\\)", "");
+                    /*candidate = */
+                    candidate.replaceAll("<a href=\"#inspection/[\\w]+\">more\\.\\.\\.</a> \\(⌘F1\\)", "");
 
                     fos.write(candidate.getBytes());
                 } catch (IOException ioe) {
