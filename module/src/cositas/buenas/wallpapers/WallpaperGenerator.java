@@ -5,6 +5,7 @@ import cositas.buenas.util.FileUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -23,6 +24,9 @@ public class WallpaperGenerator {
     private static final Color ABC_COLOR = new Color(0, 0, 0, 16);//6
 
     private static double SPREAD = Math.PI / 12;
+
+    //Do we fill the area as much as possible with random chars use each character just once
+    private static boolean ONE_OF_EACH = true;
 
     private static String createABC(char[][] ranges) {
         StringBuilder sb = new StringBuilder();
@@ -85,7 +89,9 @@ public class WallpaperGenerator {
         graphics.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_GASP);
         ArrayList<Shape> busy = new ArrayList<>();
         int delimiter = 2;//3;
-        Rectangle screen = new Rectangle(0, 0, width, height);
+        Shape outerShape = new Rectangle(0, 0, width, height);
+        int gapShapeFactor = 10;
+        outerShape = new Ellipse2D.Double(gap* gapShapeFactor, gap * gapShapeFactor, width - gap * 2 * gapShapeFactor, height - gap * 2 * gapShapeFactor);
         Set<String> used = new HashSet<>();//outer ABC set. Alternative is inner set, new one for each size
         outer:
         do {
@@ -100,10 +106,10 @@ public class WallpaperGenerator {
 //            Set<String> used = new HashSet<>();
             inner:
             for (int i = 0; i < 10000; i++) {
-                if (used.size() == ABC.length()) break outer;
+                if (ONE_OF_EACH && used.size() == ABC.length()) break outer;
                 String s;
                 s = getRandomSymbol(ABC);
-                if (used.contains(s)) continue;
+                if (ONE_OF_EACH && used.contains(s)) continue;
                 Rectangle bounds = getPreciseStringBounds(graphics, s);
 
                 int x = R.nextInt(width);
@@ -116,7 +122,7 @@ public class WallpaperGenerator {
 //                Rectangle2D realSize = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), s).getGlyphOutline(0).getBounds2D();
 //                Shape shape = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), s).getGlyphLogicalBounds(0);
 
-                if (!screen.contains(candidateArea)) continue inner;
+                if (!outerShape.contains(candidateArea)) continue inner;
                 for (Shape r : busy) {
                     if (r.intersects(candidateArea)) continue inner;
                 }
@@ -129,6 +135,9 @@ public class WallpaperGenerator {
             delimiter *= 2;
 //            delimiter++;
         } while (delimiter < 17);//17
+        //debug drawing
+//        graphics.setColor(ABC_COLOR);
+//        graphics.fill(outerShape);
     }
 
     private static Map<Integer, Rectangle> cache = new HashMap<>();
