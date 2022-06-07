@@ -5,16 +5,12 @@ import cositas.buenas.util.FileUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.awt.RenderingHints.*;
@@ -37,14 +33,9 @@ public class WallpaperGenerator {
         return sb.toString();
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         File pictures = FileUtil.mkDirs("Pictures");
-        File[] files = pictures.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.isFile() && file.getName().endsWith(".png");
-            }
-        });
+        File[] files = pictures.listFiles(file -> file.isFile() && file.getName().matches("\\d+\\.png"));
         if (files != null) {
             //noinspection ResultOfMethodCallIgnored
             Arrays.stream(files).forEach(File::delete);
@@ -61,30 +52,13 @@ public class WallpaperGenerator {
         for (float hue = minHue; hue < maxHue; hue += hueStep) rgbs.add(Color.HSBtoRGB(hue / 100f, sat, brt));
         for (float hue = maxHue; hue >= minHue; hue -= hueStep) rgbs.add(Color.HSBtoRGB(hue / 100f, sat, brt));
 
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(8);
         final AtomicInteger counter = new AtomicInteger();
         final int total = rgbs.size();
 
         for (int i = 0; i < total; i++) {
-            int finalI = i;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        generateImage(pictures, width, height, gap, rgbs, counter, total, finalI);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            generateImage(pictures, width, height, gap, rgbs, counter, total, i);
         }
-        executor.shutdown();
-        if (executor.awaitTermination(10, TimeUnit.MINUTES)) {
-            Toolkit.getDefaultToolkit().beep();
-        } else {
-            Toolkit.getDefaultToolkit().beep();
-            Toolkit.getDefaultToolkit().beep();
-        }
+        Toolkit.getDefaultToolkit().beep();
     }
 
     private static void generateImage(File pictures, int width, int height, int gap, List<Integer> rgbs, AtomicInteger counter, int total, int i) throws IOException {
@@ -92,12 +66,14 @@ public class WallpaperGenerator {
         Color c2 = new Color(rgbs.get((i + 5) % total));
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
-//        graphics.setColor(c1);
         graphics.setPaint(new DitheredGradientPaint(0, height, c1, width, 0, c2));
+//        graphics.setRenderingHint(KEY_COLOR_RENDERING, VALUE_COLOR_RENDER_QUALITY);
+//        graphics.setRenderingHint(KEY_DITHERING, VALUE_DITHER_ENABLE);
+//        graphics.setPaint(new GradientPaint(0, height, c1, width, 0, c2));
         graphics.fillRect(0, 0, width + 1, height + 1);
         addNoise(graphics, width, height, gap);
         ImageIO.write(image, "png", new File(pictures, String.format("%03d", (i + 1)) + ".png"));
-        System.out.println(counter.addAndGet(1) + "/" + total);
+        System.out.println(counter.addAndGet(1) + "/" + total + " (#" + (i + 1) + ")");
     }
 
     static final int gridStep = 100;
@@ -196,29 +172,4 @@ public class WallpaperGenerator {
     private static <T> T getRandom(T... elements) {
         return elements[R.nextInt(elements.length)];
     }
-
-    private static void addNoise(Graphics2D graphics, int width, int height) {
-        int limit = 20 + R.nextInt(40);
-        graphics.setColor(ABC_COLOR);
-        graphics.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY);
-        graphics.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_GASP);
-        for (int i = 0; i < limit; i++) {
-            String[] fontList = Toolkit.getDefaultToolkit().getFontList();
-            int size = height / 5;//height/20 + R.nextInt(height/5);
-//            graphics.setFont(new Font(fontList[R.nextInt(fontList.length)], R.nextInt(2), size));
-//            graphics.setFont(new Font(getRandom(Font.MONOSPACED, Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF), /*R.nextInt(2)*/getRandom(Font.BOLD, Font.PLAIN, Font.ITALIC), size));
-//            graphics.setFont(new Font(Font.MONOSPACED, /*R.nextInt(2)*/getRandom(Font.BOLD, Font.PLAIN, Font.ITALIC), size));
-            graphics.setFont(new Font(Font.MONOSPACED, Font.ITALIC, size));
-            String s = "" + ABC.charAt(R.nextInt(ABC.length()));
-            Rectangle2D bounds = graphics.getFontMetrics().getStringBounds(s, graphics);
-            AffineTransform transform = graphics.getTransform();
-            AffineTransform copy = new AffineTransform(transform);
-            copy.concatenate(AffineTransform.getRotateInstance(-SPREAD + R.nextDouble() * 2 * SPREAD));
-            graphics.setTransform(copy);
-            graphics.drawString(s, R.nextInt(width - (int) bounds.getWidth()), (int) bounds.getHeight() + R.nextInt(height - (int) bounds.getHeight()));
-            graphics.setTransform(transform);
-        }
-    }
-
 }
