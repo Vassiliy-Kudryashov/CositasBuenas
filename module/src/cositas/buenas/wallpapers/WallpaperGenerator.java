@@ -19,7 +19,19 @@ import static java.awt.RenderingHints.*;
 
 public class WallpaperGenerator {
     private static final Random R = new Random();
-    private static final String ABC = createABC(new char[][]{{'0', '9'}, {'A', 'Z'}, {'a', 'z'}});
+    public static final String ABC = createABC(new char[][]{{'0', '9'}, {'A', 'Z'}, {'a', 'z'}});
+    static List<Font> ALL_FONTS = new ArrayList<>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()));
+
+    static {
+        ALL_FONTS.removeIf(font -> {
+            for (int i = 0; i < ABC.length(); i++) {
+                if (!font.canDisplay(ABC.charAt(i))) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
     private static final Color ABC_COLOR = new Color(0, 0, 0, 16);//6
     public static final int GAP_DELIMITER = 1000;//100;
     public static final int OUTER_MARGIN_DELIMITER = 9;//100;
@@ -28,6 +40,8 @@ public class WallpaperGenerator {
 
     //Do we fill the area as much as possible with random chars use each character just once
     private static boolean ONE_OF_EACH = false;
+
+    private static boolean ONE_OF_EACH_IN_LEVEL = true;
     //Do we consider letter shape as rectangle or a more complex shape with possible inner holes etc..
     private static boolean MULTIRECT_LETTER_SHAPE = true;
 
@@ -63,7 +77,7 @@ public class WallpaperGenerator {
 
         final float sat = 1.0f;
         final float brt = 0.5f;
-        final float hueStep = 1.0f;
+        final float hueStep = 0.1f;//1.0
         List<Integer> rgbs = new ArrayList<>();
         for (float hue = minHue; hue < maxHue; hue += hueStep) rgbs.add(Color.HSBtoRGB(hue / 100f, sat, brt));
         for (float hue = maxHue; hue >= minHue; hue -= hueStep) rgbs.add(Color.HSBtoRGB(hue / 100f, sat, brt));
@@ -89,13 +103,18 @@ public class WallpaperGenerator {
 //        graphics.setRenderingHint(KEY_DITHERING, VALUE_DITHER_ENABLE);
 //        graphics.setPaint(new GradientPaint(0, height, c1, width, 0, c2));
         graphics.fillRect(0, 0, width + 1, height + 1);
-        addNoise(graphics, width, height);
+        addNoise(graphics, width, height, i);
         ImageIO.write(image, "png", new File(pictures, String.format("%03d", (i + 1)) + ".png"));
         System.out.println(counter.addAndGet(1) + "/" + total + " (#" + (i + 1) + ")");
     }
 
-    private static void addNoise(Graphics2D graphics, int width, int height) {
+    private static void addNoise(Graphics2D graphics, int width, int height, int index) {
         int gap = Math.max(1, Math.min(width, height) / GAP_DELIMITER);
+        //debug
+        graphics.setColor(Color.BLACK);
+        graphics.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 120));
+        graphics.drawString(getFont(20, index).getName(), 80, height * 7 / 8);
+
 
 //        graphics.setColor(ABC_COLOR);
         graphics.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY);
@@ -108,11 +127,13 @@ public class WallpaperGenerator {
         Set<String> used = new HashSet<>();//outer ABC set. Alternative is inner set, new one for each size
         outer:
         do {
+            Set<String> usedInLevel = new HashSet<>();
             graphics.setColor(ABC_COLOR);
 //            graphics.setColor(new Color(0, 0, 0, (int)Math.max(4, 32.0 / delimiter)));
 //            graphics.setColor(new Color(0, 0, 0, Math.max(4, (int)(64.0 / Math.log(delimiter+3)))));
             int size = height / delimiter;
-            graphics.setFont(new Font(Font.MONOSPACED, Font.BOLD, size));
+//            graphics.setFont(new Font(Font.MONOSPACED, Font.BOLD, size));
+            graphics.setFont(getFont(size, index));
 //            graphics.setFont(new Font(Font.DIALOG, Font.PLAIN, size));
 //            graphics.setFont(new Font(getRandom(Font.SANS_SERIF/*, Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF*/), Font.BOLD, size));
 //            graphics.setFont(new Font("Blackadder ITC", Font.PLAIN, size));
@@ -123,10 +144,12 @@ public class WallpaperGenerator {
 //                graphics.setFont(randomFont.deriveFont(/*Font.BOLD, */size));
 
                 if (ONE_OF_EACH && used.size() == ABC.length()) break outer;
+                if (ONE_OF_EACH_IN_LEVEL && usedInLevel.size() == ABC.length()) break inner;
                 String s;
                 s = getRandomSymbol(ABC);
 //                if (!randomFont.canDisplay(s.charAt(0))) break inner;
                 if (ONE_OF_EACH && used.contains(s)) continue;
+                if (ONE_OF_EACH_IN_LEVEL && usedInLevel.contains(s)) continue;
                 Shape stringShape = getPreciseStringShape(graphics, s);
                 if (stringShape == null) continue;
 
@@ -147,13 +170,17 @@ public class WallpaperGenerator {
 //                Rectangle2D realSize = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), s).getGlyphOutline(0).getBounds2D();
 //                Shape shape = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), s).getGlyphLogicalBounds(0);
 
-                if (!outerShape.contains(candidateArea)) continue inner;
+
                 if (!MULTIRECT_LETTER_SHAPE) {
+                    if (!outerShape.contains(candidateArea)) continue inner;
                     for (Shape r : busy) {
                         if (r.intersects(candidateArea)) continue inner;
                     }
                     busy.add(candidateArea);
                 } else {
+                    for (Rectangle2D r2d : translatedMultiRect) {
+                        if (!outerShape.contains(r2d)) continue inner;
+                    }
                     for (List<Rectangle2D> multiUsed : multiBusy) {
                         for (Rectangle2D mu : multiUsed) {
                             for (Rectangle2D r2d : translatedMultiRect) {
@@ -165,6 +192,7 @@ public class WallpaperGenerator {
                 }
 
                 used.add(s);
+                usedInLevel.add(s);
                 graphics.drawString(s, x, y);//debug
                 //graphics.draw(new RoundRectangle2D.Double(candidateArea.getX(), candidateArea.getY(), candidateArea.getWidth(), candidateArea.getHeight(), gap, gap));
 //                graphics.fill(candidateArea);
@@ -181,6 +209,9 @@ public class WallpaperGenerator {
         //debug drawing
 //        graphics.setColor(ABC_COLOR);
 //        graphics.fill(outerShape);
+    }
+    private static Font getFont(int size, int index) {
+        return new Font(ALL_FONTS.get(index % ALL_FONTS.size()).getName(), Font.PLAIN, size);
     }
 
     private static Shape createOuterShape(int width, int height) {
