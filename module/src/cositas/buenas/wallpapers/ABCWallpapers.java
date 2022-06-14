@@ -52,11 +52,11 @@ public class ABCWallpapers {
     public static final int GAP_DELIMITER = 100;//100;
     public static final int OUTER_MARGIN_DELIMITER = 9;//100;
 
-    private static boolean CLEAR_PREVIOUS_RESULTS = true;
+    private static boolean CLEAR_PREVIOUS_RESULTS = false;
     //Do we fill the area as much as possible with random chars use each character just once
-    private static boolean ONE_OF_EACH = true;
+    private static boolean ONE_OF_EACH = false;
 
-    private static boolean ONE_OF_EACH_IN_LEVEL = true;
+    private static boolean ONE_OF_EACH_IN_LEVEL = false;
 
     private static final int MULTIRECT_SQUARE_SIZE = 5;//50;
 
@@ -131,9 +131,9 @@ public class ABCWallpapers {
 //                0, 0, new Color(255, 255, 255, 15),
 //                0, height, new Color(0, 0, 0, 15)));
 //        graphics.fillRect(0, 0, width+1, height +1);
-//        ImageUtil.writeJPEG(image, new File(pictures, String.format("%03d", (i + 1)) + ".jpg"), .95f);
+//        ImageUtil.writeJPEG(image, new File(pictures, String.format("%03d", (i + 1)) + ".jpg"), 1.0f);
         ImageIO.write(image, "png", new File(pictures, String.format("%03d", (i + 1)) + ".png"));
-        System.out.println(wrap(getFont(10, i).getFamily()) +": " + counter.addAndGet(1) + "/" + total + " (#" + (i + 1) + ") in " + (System.currentTimeMillis() - start) + "ms");
+        System.out.println(wrap(getFont(10, i).getFamily()) +": " + counter.addAndGet(1) + "/" + total + " in " + (System.currentTimeMillis() - start) + "ms");
     }
 
     private static void addLetters(Graphics2D graphics, int width, int height, int index) {
@@ -150,6 +150,7 @@ public class ABCWallpapers {
         graphics.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_GASP);
         ArrayList<MultiRect> multiBusy = new ArrayList<>();
         ArrayList<String> dictionary = new ArrayList<>();
+        //todo: Maybe sort letters in 'emptiness' order, Where J or D is more 'interesting' than 1 of I
         for (int i = 0; i < ABC.length(); i++) dictionary.add(""+ABC.charAt(i));
         double delimiter = 2;//3;
         final Shape outerShape = createOuterShape(width, height);
@@ -217,7 +218,10 @@ public class ABCWallpapers {
 //                }
                 if (s.length() == 1) {
 //                    used.add(s);
-                    if (ONE_OF_EACH) dictionary.remove(s);
+                    dictionary.remove(s);
+                    if (!ONE_OF_EACH && dictionary.isEmpty()) {
+                        for (int j = 0; j < ABC.length(); j++) dictionary.add(""+ABC.charAt(j));
+                    }
                     usedInLevel.add(s);
                 } else {
                     messageProcessed = true;
