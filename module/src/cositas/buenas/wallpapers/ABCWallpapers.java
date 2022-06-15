@@ -19,6 +19,11 @@ import static java.awt.RenderingHints.*;
 
 
 public class ABCWallpapers {
+    //TODO: Refactor config as .properties + defaults-aware helper class
+    //TODO: Parse font from https://fonts.google.com/ without installation,
+    // GraphicsEnvironment.registerFont(
+    //                Font.createFont(Font.TRUETYPE_FONT, {stream from URL}))
+    // maybe use https://github.com/anupthegit/WOFFToTTFJava
     private static final Random R = new Random();
     public static final String ABC = createABC(new char[][]{{'0', '9'}, {'A', 'Z'}, {'a', 'z'}});
     static List<Font> ALL_FONTS = new ArrayList<>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()));
