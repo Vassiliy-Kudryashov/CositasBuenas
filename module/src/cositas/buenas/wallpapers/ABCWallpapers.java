@@ -3,7 +3,6 @@ package cositas.buenas.wallpapers;
 import cositas.buenas.ui.DitheredGradientPaint;
 import cositas.buenas.ui.SuperEllipse;
 import cositas.buenas.util.FileUtil;
-import cositas.buenas.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -25,7 +24,7 @@ public class ABCWallpapers {
     //                Font.createFont(Font.TRUETYPE_FONT, {stream from URL}))
     // maybe use https://github.com/anupthegit/WOFFToTTFJava
     private static final Random R = new Random();
-    public static final String ABC = createABC(new char[][]{{'0', '9'}, {'A', 'Z'}, {'a', 'z'}});
+    public static final String ABC = createABC(new char[][]{/*{'0', '9'},*/ {'A', 'Z'}/*, {'a', 'z'}*/});
     static List<Font> ALL_FONTS = new ArrayList<>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()));
     private static final List<String> STANDARD_FONT_NICKNAMES = Arrays.asList(Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF, Font.MONOSPACED);
     private static int maxFontNameLength = 0;
@@ -37,7 +36,7 @@ public class ABCWallpapers {
                     return true;
                 }
             }
-            return (STANDARD_FONT_NICKNAMES.contains(font.getName()));
+            return (STANDARD_FONT_NICKNAMES.contains(font.getFamily()));
         });
         for (Font font : ALL_FONTS) {
             maxFontNameLength = Math.max(maxFontNameLength, font.getFamily().length());
@@ -54,14 +53,16 @@ public class ABCWallpapers {
     }
 
     private static final Color ABC_COLOR = new Color(0, 0, 0, 16);//6
-    public static final int GAP_DELIMITER = 100;//100;
+    public static final double GAP_RATIO = .01;
     public static final int OUTER_MARGIN_DELIMITER = 9;//100;
 
     private static boolean CLEAR_PREVIOUS_RESULTS = false;
-    //Do we fill the area as much as possible with random chars use each character just once
-    private static boolean ONE_OF_EACH = false;
 
-    private static boolean ONE_OF_EACH_IN_LEVEL = false;
+    private static boolean SKIP_EXISTING_FILES = true;
+    //Do we fill the area as much as possible with random chars use each character just once
+    private static boolean ONE_OF_EACH = true;
+
+    private static boolean ONE_OF_EACH_IN_LEVEL = true;
 
     private static final int MULTIRECT_SQUARE_SIZE = 5;//50;
 
@@ -71,7 +72,8 @@ public class ABCWallpapers {
 
     private static boolean EMBED_FONT_NAME = true;
 
-    private static int MAX_DELIMITER = 64;
+    private static double INITIAL_FONT_RATIO = .6;
+    private static double MIN_FONT_RATIO = 1d/64;
 
     static final int GRID_POSITION_STEP = 1;//100;
 
@@ -120,6 +122,8 @@ public class ABCWallpapers {
 
     private static void generateImage(File pictures, int width, int height, List<Integer> rgbs, AtomicInteger counter, int total, int i) throws IOException {
 //        cache.clear();
+        File output = new File(pictures, String.format("%03d", (i + 1)) + ".png");
+        if (output.isFile() && SKIP_EXISTING_FILES) return;
         multiCache.clear();
         long start = System.currentTimeMillis();
         Color c1 = new Color(rgbs.get(i));
@@ -137,12 +141,12 @@ public class ABCWallpapers {
 //                0, height, new Color(0, 0, 0, 15)));
 //        graphics.fillRect(0, 0, width+1, height +1);
 //        ImageUtil.writeJPEG(image, new File(pictures, String.format("%03d", (i + 1)) + ".jpg"), 1.0f);
-        ImageIO.write(image, "png", new File(pictures, String.format("%03d", (i + 1)) + ".png"));
-        System.out.println(wrap(getFont(10, i).getFamily()) +": " + counter.addAndGet(1) + "/" + total + " in " + (System.currentTimeMillis() - start) + "ms");
+        ImageIO.write(image, "png", output);
+        System.out.println(wrap(getFont(10, i).getFamily()) +": " + (i+1) + "/" + total + " in " + (System.currentTimeMillis() - start) + "ms");
     }
 
     private static void addLetters(Graphics2D graphics, int width, int height, int index) {
-        int gap = Math.max(1, Math.min(width, height) / GAP_DELIMITER);
+        double gap = Math.max(1, Math.min(width, height) * GAP_RATIO);
         //debug
 //        graphics.setColor(Color.BLACK);
 //        graphics.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 120));
@@ -157,7 +161,7 @@ public class ABCWallpapers {
         ArrayList<String> dictionary = new ArrayList<>();
         //todo: Maybe sort letters in 'emptiness' order, Where J or D is more 'interesting' than 1 of I
         for (int i = 0; i < ABC.length(); i++) dictionary.add(""+ABC.charAt(i));
-        double delimiter = 2;//3;
+        double fontRatio = INITIAL_FONT_RATIO;//3;
         final Shape outerShape = createOuterShape(width, height);
 //        Set<String> used = new HashSet<>();
         boolean messageProcessed = false;
@@ -168,7 +172,7 @@ public class ABCWallpapers {
             graphics.setColor(ABC_COLOR);
 //            graphics.setColor(new Color(0, 0, 0, (int)Math.max(4, 32.0 / delimiter)));
 //            graphics.setColor(new Color(0, 0, 0, Math.max(4, (int)(64.0 / Math.log(delimiter+3)))));
-            double size = height / delimiter;
+            double size = height * fontRatio;
             if (dictionary.size() == ABC.length() && EMBED_FONT_NAME && !messageProcessed) {
                 size /= 8/*(MAX_DELIMITER/4)*/;
             }
@@ -236,10 +240,12 @@ public class ABCWallpapers {
             }
             if (!EMBED_FONT_NAME || dictionary.size() < ABC.length()) {
 //                delimiter = delimiter * 1.6180339;
-                delimiter *= 2;
+                fontRatio *= (Math.sqrt(5) - 1) / 2;
+//                fontRatio *=Math.sqrt(.5);
+//                fontRatio *= 0.99;
             }
 //            delimiter++;
-        } while (delimiter < MAX_DELIMITER);//17
+        } while (fontRatio >= MIN_FONT_RATIO);//17
         //debug drawing
 //        graphics.setColor(ABC_COLOR);
 //        graphics.fill(outerShape);
