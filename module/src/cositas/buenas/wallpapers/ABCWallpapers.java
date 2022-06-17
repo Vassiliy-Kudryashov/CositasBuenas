@@ -28,7 +28,7 @@ public class ABCWallpapers {
     static List<Font> ALL_FONTS = new ArrayList<>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()));
     private static final List<String> STANDARD_FONT_NICKNAMES = Arrays.asList(Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF, Font.MONOSPACED);
     private static int maxFontNameLength = 0;
-    private static String[] WRAPPERS;
+    private static final String[] WRAPPING_SPACES;
     static {
         ALL_FONTS.removeIf(font -> {
             for (int i = 0; i < ABC.length(); i++) {
@@ -41,14 +41,14 @@ public class ABCWallpapers {
         for (Font font : ALL_FONTS) {
             maxFontNameLength = Math.max(maxFontNameLength, font.getFamily().length());
         }
-        WRAPPERS = new String[maxFontNameLength];
-        WRAPPERS[WRAPPERS.length - 1] = "";
-        for (int i = WRAPPERS.length - 2; i >= 0; i--) {
-            WRAPPERS[i] = " " + WRAPPERS[i+1];
+        WRAPPING_SPACES = new String[maxFontNameLength];
+        WRAPPING_SPACES[WRAPPING_SPACES.length - 1] = "";
+        for (int i = WRAPPING_SPACES.length - 2; i >= 0; i--) {
+            WRAPPING_SPACES[i] = " " + WRAPPING_SPACES[i+1];
         }
     }
     static String wrap(String s) {
-        if (s.length() < WRAPPERS.length) return s + WRAPPERS[s.length()];
+        if (s.length() < WRAPPING_SPACES.length) return s + WRAPPING_SPACES[s.length()];
         return s;
     }
 
@@ -131,9 +131,6 @@ public class ABCWallpapers {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
         graphics.setPaint(new DitheredGradientPaint(0, height, c1, width, 0, c2));
-//        graphics.setRenderingHint(KEY_COLOR_RENDERING, VALUE_COLOR_RENDER_QUALITY);
-//        graphics.setRenderingHint(KEY_DITHERING, VALUE_DITHER_ENABLE);
-//        graphics.setPaint(new GradientPaint(0, height, c1, width, 0, c2));
         graphics.fillRect(0, 0, width + 1, height + 1);
         addLetters(graphics, width, height, i);
 //        graphics.setPaint(new GradientPaint(
@@ -147,13 +144,6 @@ public class ABCWallpapers {
 
     private static void addLetters(Graphics2D graphics, int width, int height, int index) {
         double gap = Math.max(1, Math.min(width, height) * GAP_RATIO);
-        //debug
-//        graphics.setColor(Color.BLACK);
-//        graphics.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 120));
-//        graphics.drawString(getFont(20, index).getName(), 80, height * 7 / 8);
-
-
-//        graphics.setColor(ABC_COLOR);
         graphics.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY);
         graphics.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
         graphics.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_GASP);
@@ -163,25 +153,17 @@ public class ABCWallpapers {
         for (int i = 0; i < ABC.length(); i++) dictionary.add(""+ABC.charAt(i));
         double fontRatio = INITIAL_FONT_RATIO;//3;
         final Shape outerShape = createOuterShape(width, height);
-//        Set<String> used = new HashSet<>();
         boolean messageProcessed = false;
         //outer ABC set. Alternative is inner set, new one for each size
         outer:
         do {
             Set<String> usedInLevel = new HashSet<>();
             graphics.setColor(ABC_COLOR);
-//            graphics.setColor(new Color(0, 0, 0, (int)Math.max(4, 32.0 / delimiter)));
-//            graphics.setColor(new Color(0, 0, 0, Math.max(4, (int)(64.0 / Math.log(delimiter+3)))));
             double size = height * fontRatio;
             if (dictionary.size() == ABC.length() && EMBED_FONT_NAME && !messageProcessed) {
-                size /= 8/*(MAX_DELIMITER/4)*/;
+                size /= 8;
             }
-//            graphics.setFont(new Font(Font.MONOSPACED, Font.BOLD, size));
             graphics.setFont(getFont(size, index));
-//            graphics.setFont(new Font(Font.DIALOG, Font.PLAIN, size));
-//            graphics.setFont(new Font(getRandom(Font.SANS_SERIF/*, Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF*/), Font.BOLD, size));
-//            graphics.setFont(new Font("Blackadder ITC", Font.PLAIN, size));
-//            Set<String> used = new HashSet<>();
             inner:
             for (int i = 0; i < 10000; i++) {
 //                Font randomFont = getRandom(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts());
@@ -189,15 +171,8 @@ public class ABCWallpapers {
 
                 if (ONE_OF_EACH && dictionary.isEmpty()) break outer;
                 if (ONE_OF_EACH_IN_LEVEL && usedInLevel.size() == ABC.length()) break inner;
-                String s;
-                s = EMBED_FONT_NAME && !messageProcessed ? graphics.getFont().getFamily() : getRandom(dictionary);
-//                if (!randomFont.canDisplay(s.charAt(0))) break inner;
-//                if (ONE_OF_EACH && used.contains(s)) continue;
+                String s = EMBED_FONT_NAME && !messageProcessed ? graphics.getFont().getFamily() : getRandom(dictionary);
                 if (ONE_OF_EACH_IN_LEVEL && usedInLevel.contains(s)) continue;
-//                Shape stringShape = getPreciseStringBounds(graphics, s);
-//                if (stringShape == null) continue;
-
-//                Rectangle bounds = stringShape.getBounds();
 
                 int x = R.nextInt(width);
                 int y = R.nextInt(height);
@@ -207,10 +182,6 @@ public class ABCWallpapers {
                 }
                 MultiRect cachedMultiRect = getPreciseStringMultiRect(graphics, s);
                 MultiRect translatedMultiRect = cachedMultiRect.translateAndAddGap(x, y, gap);// or gap/2 ??
-//                Rectangle2D candidateArea = new Rectangle2D.Double(x + bounds.getX() - gap / 2d, y + bounds.getY() - gap / 2d, bounds.getWidth() + gap, bounds.getHeight() + gap);
-//                Rectangle2D realSize = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), s).getGlyphOutline(0).getBounds2D();
-//                Shape shape = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), s).getGlyphLogicalBounds(0);
-
 
                 if (!outerShape.contains(translatedMultiRect.myOuterRect)) continue inner;
                 for (MultiRect multiUsed : multiBusy) {
@@ -262,36 +233,6 @@ public class ABCWallpapers {
         //return new Ellipse2D.Double(margin, margin, width - 2 * margin, height - 2 * margin);
         return new SuperEllipse(margin, margin, width - 2 * margin, height - 2 * margin, .7);
     }
-
-//    private static final Map<Integer, Rectangle> cache = new HashMap<>();
-
-//    private static Shape getPreciseStringBounds(Graphics2D g, String s) {
-//        Rectangle bounds = g.getFontMetrics().getStringBounds(s, g).getBounds();
-//        int code = (s + g.getFont().getSize()).hashCode();
-////        if (bounds.width <=0 || bounds.height <=0) return null;
-//        return cache.computeIfAbsent(code, __ -> {
-//            BufferedImage image = new BufferedImage(bounds.width, bounds.height, Transparency.TRANSLUCENT);
-//            Graphics2D graphics = image.createGraphics();
-//            graphics.setColor(Color.RED);
-//            graphics.setFont(g.getFont());
-//            graphics.drawString(s, -bounds.x, -bounds.y);
-//            int minX = Integer.MAX_VALUE;
-//            int minY = Integer.MAX_VALUE;
-//            int maxX = Integer.MIN_VALUE;
-//            int maxY = Integer.MIN_VALUE;
-//            for (int x = 0; x < image.getWidth(); x++) {
-//                for (int y = 0; y < image.getHeight(); y++) {
-//                    if (image.getRGB(x, y) != 0) {
-//                        minX = Math.min(minX, x);
-//                        minY = Math.min(minY, y);
-//                        maxX = Math.max(maxX, x);
-//                        maxY = Math.max(maxY, y);
-//                    }
-//                }
-//            }
-//            return new Rectangle(bounds.x + minX, bounds.y + minY, maxX - minX, maxY - minY);
-//        });
-//    }
 
     private static final Map<Integer, MultiRect> multiCache = new HashMap<>();
 
