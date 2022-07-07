@@ -10,6 +10,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 
@@ -23,6 +25,8 @@ public class ABCWallpapers {
     //                Font.createFont(Font.TRUETYPE_FONT, {stream from URL}))
     // maybe use https://github.com/anupthegit/WOFFToTTFJava
     private static final Random R = new Random();
+
+    private static final Format FORMAT = new SimpleDateFormat("HH:mm:ss");
     public static final String ABC = createABC(new char[][]{{'0', '9'}, {'A', 'Z'}, {'a', 'z'}});
     static List<Font> ALL_FONTS = new ArrayList<>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()));
     private static final List<String> STANDARD_FONT_NICKNAMES = Arrays.asList(Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF, Font.MONOSPACED);
@@ -36,7 +40,7 @@ public class ABCWallpapers {
                     return true;
                 }
             }
-            return (STANDARD_FONT_NICKNAMES.contains(font.getFamily()));
+            return (STANDARD_FONT_NICKNAMES.contains(font.getFamily()) && font.getName().contains(font.getFamily()));
         });
         for (Font font : ALL_FONTS) {
             maxFontNameLength = Math.max(maxFontNameLength, font.getFamily().length());
@@ -54,30 +58,34 @@ public class ABCWallpapers {
     }
 
     private static final Color ABC_COLOR = new Color(0, 0, 0, 16);//6
-    public static final double GAP_RATIO = .01;
+    public static final double GAP_SCREEN_RATIO = .005;
+    public static final double LOCAL_GAP_RATIO = .05;
+    public static final boolean USE_LOCAL_GAP_RATIO = false;
     public static final int OUTER_MARGIN_DELIMITER = 9;//100;
 
     private static boolean CLEAR_PREVIOUS_RESULTS = false;
 
-    private static boolean SKIP_EXISTING_FILES = true;
+    private static boolean SKIP_EXISTING_FILES = false;
+
+    private static boolean JUST_ONE_LETTER = false;
+
     //Do we fill the area as much as possible with random chars use each character just once
     private static boolean ONE_OF_EACH = true;
 
     private static boolean ONE_OF_EACH_IN_LEVEL = true;
 
-    private static final int MULTIRECT_SQUARE_SIZE = 5;//50;
+    private static final int MULTIRECT_SQUARE_SIZE = 3;//50;
 
     private static boolean JUST_ONE_PICTURE = false;
 
-    private static boolean JUST_ONE_LETTER = false;
-
     private static boolean EMBED_FONT_NAME = true;
 
-    private static double INITIAL_FONT_RATIO = .4;
-    private static double MIN_FONT_RATIO = 1d / 64;
+    private static double INITIAL_FONT_RATIO = .5;
+    private static double MIN_FONT_RATIO = 1d / 256;
 
     static final int GRID_POSITION_STEP = 1;//100;
 
+    static final boolean DEBUG = true;
 
     private static String createABC(char[][] ranges) {
         StringBuilder sb = new StringBuilder();
@@ -140,11 +148,12 @@ public class ABCWallpapers {
 //        graphics.fillRect(0, 0, width+1, height +1);
 //        ImageUtil.writeJPEG(image, new File(pictures, String.format("%03d", (i + 1)) + ".jpg"), 1.0f);
         ImageIO.write(image, "png", output);
-        System.out.println(wrap(getFont(10, i).getName()) + ": " + (i + 1) + "/" + total + " in " + (System.currentTimeMillis() - start) + "ms");
+        System.out.println(wrap(getFont(10, i).getName()) + ": " + (i + 1) + "/" + total
+                + " in " + (System.currentTimeMillis() - start) + "ms " + FORMAT.format(System.currentTimeMillis()));
     }
 
     private static void addLetters(Graphics2D graphics, int width, int height, int index) {
-        double gap = Math.max(1, Math.min(width, height) * GAP_RATIO);
+        double screenGap = Math.max(1, Math.min(width, height) * GAP_SCREEN_RATIO);
         graphics.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY);
         graphics.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
         graphics.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_GASP);
@@ -169,9 +178,11 @@ public class ABCWallpapers {
             inner:
             for (int i = 0; i < 1000000; i++) {
                 if (System.currentTimeMillis() - lastTime > 10000) {
-//                    System.err.println("Emergency downscale for '" + graphics.getFont().getName() + "', size=" + size +
-//                            ", dictionary=" + dictionary.size()+", ABC=" + ABC.length());
-                    fontRatio *= (Math.sqrt(5) - 1) / 2;
+                    if (DEBUG) {
+                    System.err.println("Emergency downscale for '" + graphics.getFont().getName() + "', size=" + size +
+                            ", dictionary=" + dictionary.size()+" of " + ABC.length());
+                    }
+                    fontRatio = getSmaller(fontRatio);
                     lastTime = System.currentTimeMillis();
                     break;
                 }
@@ -190,7 +201,8 @@ public class ABCWallpapers {
                     y = (y / GRID_POSITION_STEP) * GRID_POSITION_STEP;
                 }
                 MultiRect cachedMultiRect = getPreciseStringMultiRect(graphics, s);
-                MultiRect translatedMultiRect = cachedMultiRect.translateAndAddGap(x, y, gap);// or gap/2 ??
+                double localGap = Math.min(cachedMultiRect.myOuterRect.width, cachedMultiRect.myOuterRect.height)  * LOCAL_GAP_RATIO;
+                MultiRect translatedMultiRect = cachedMultiRect.translateAndAddGap(x, y, USE_LOCAL_GAP_RATIO ? localGap : screenGap);// or gap/2 ??
 
                 if (!outerShape.contains(translatedMultiRect.myOuterRect)) continue;
                 for (MultiRect multiUsed : multiBusy) {
@@ -198,7 +210,9 @@ public class ABCWallpapers {
                 }
                 multiBusy.add(translatedMultiRect);
                 graphics.drawString(s, x, y);//debug
-//                System.out.print(s);
+                if (DEBUG) {
+                    System.err.print(s);
+                }
                 lastTime = System.currentTimeMillis();
                 //graphics.draw(new RoundRectangle2D.Double(candidateArea.getX(), candidateArea.getY(), candidateArea.getWidth(), candidateArea.getHeight(), gap, gap));
 //                graphics.fill(candidateArea);
@@ -222,7 +236,7 @@ public class ABCWallpapers {
             }
             if (!EMBED_FONT_NAME || dictionary.size() < ABC.length()) {
 //                delimiter = delimiter * 1.6180339;
-                fontRatio *= (Math.sqrt(5) - 1) / 2;
+                fontRatio = getSmaller(fontRatio);
 //                fontRatio *=Math.sqrt(.5);
 //                fontRatio *= 0.99;
             }
@@ -232,10 +246,17 @@ public class ABCWallpapers {
 //        graphics.setColor(ABC_COLOR);
 //        graphics.fill(outerShape);
     }
+    private static double getSmaller(double d) {
+//        return d * .99;
+        return d * (Math.sqrt(5) - 1) / 2;//0.6180339
+    }
 
     private static Font getFont(double size, int index) {
 //        if (index == 0) return new Font("BodoniSvtyTwoOSITCTT-Book", Font.PLAIN, size);
-        return new Font(ALL_FONTS.get(index % ALL_FONTS.size()).getName(), Font.PLAIN, (int) size);
+        String name = ALL_FONTS.get(index % ALL_FONTS.size()).getName();
+        int style = Font.PLAIN;
+        if (name.contains("Italic")) style = Font.ITALIC;
+        return new Font(name, style, (int) size);
     }
 
     private static Shape createOuterShape(int width, int height) {
