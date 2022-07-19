@@ -24,6 +24,7 @@ public class ABCWallpapers {
     // GraphicsEnvironment.registerFont(
     //                Font.createFont(Font.TRUETYPE_FONT, {stream from URL}))
     // maybe use https://github.com/anupthegit/WOFFToTTFJava
+    //TODO convert results into a web game where clicks in proper ABC order solves the puzzle
     private static final Random R = new Random();
 
     private static final Format FORMAT = new SimpleDateFormat("HH:mm:ss");
