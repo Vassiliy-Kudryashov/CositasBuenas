@@ -28,7 +28,7 @@ public class ABCWallpapers {
     private static final Random R = new Random();
 
     private static final Format FORMAT = new SimpleDateFormat("HH:mm:ss");
-    public static final String ABC = createABC(new char[][]{{'0', '9'}, {'A', 'Z'}, {'a', 'z'}});
+    public static final String ABC = createABC(new char[][]{/*{'0', '9'},*/ {'A', 'Z'}/*, {'a', 'z'}*/});
     static List<Font> ALL_FONTS = new ArrayList<>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()));
     private static final List<String> STANDARD_FONT_NICKNAMES = Arrays.asList(Font.DIALOG, Font.DIALOG_INPUT, Font.SANS_SERIF, Font.SERIF, Font.MONOSPACED);
     private static int maxFontNameLength = 0;
@@ -79,6 +79,8 @@ public class ABCWallpapers {
 
     private static boolean JUST_ONE_PICTURE = false;
 
+    private static boolean HTML_VERSION = true;
+
     private static boolean EMBED_FONT_NAME = true;
 
     private static double INITIAL_FONT_RATIO = .5;
@@ -98,7 +100,9 @@ public class ABCWallpapers {
     }
 
     public static void main(String[] args) throws IOException {
-        File pictures = FileUtil.mkDirs("Pictures/ABCWallpapers");
+        File pictures = HTML_VERSION
+                ? FileUtil.mkDirs("Pictures/ABC_HTML")
+                : FileUtil.mkDirs("Pictures/ABCWallpapers");
         if (CLEAR_PREVIOUS_RESULTS) {
             File[] files = pictures.listFiles(file -> file.isFile() && file.getName().matches("\\d+\\.(png|jpg)"));
             if (files != null) {
@@ -124,15 +128,15 @@ public class ABCWallpapers {
 
         for (int i = 0; i < total; i++) {
             generateImage(pictures, width, height, rgbs, total, i);
-            if (JUST_ONE_PICTURE)
+            if (JUST_ONE_PICTURE || HTML_VERSION)
                 break;
         }
         Toolkit.getDefaultToolkit().beep();
     }
 
-    private static void generateImage(File pictures, int width, int height, List<Integer> rgbs, int total, int i) throws IOException {
+    private static void generateImage(File dir, int width, int height, List<Integer> rgbs, int total, int i) throws IOException {
 //        cache.clear();
-        File output = new File(pictures, String.format("%03d", (i + 1)) + ".png");
+        File output = new File(dir, String.format("%03d", (i + 1)) + ".png");
         if (output.isFile() && SKIP_EXISTING_FILES) return;
         multiCache.clear();
         long start = System.currentTimeMillis();
@@ -142,23 +146,26 @@ public class ABCWallpapers {
         Graphics2D graphics = image.createGraphics();
         graphics.setPaint(new DitheredGradientPaint(0, height, c1, width, 0, c2));
         graphics.fillRect(0, 0, width + 1, height + 1);
-        addLetters(graphics, width, height, i);
+        Map<String, MultiRect> multiRectMap = addLetters(graphics, width, height, i);
 //        graphics.setPaint(new GradientPaint(
 //                0, 0, new Color(255, 255, 255, 15),
 //                0, height, new Color(0, 0, 0, 15)));
 //        graphics.fillRect(0, 0, width+1, height +1);
 //        ImageUtil.writeJPEG(image, new File(pictures, String.format("%03d", (i + 1)) + ".jpg"), 1.0f);
         ImageIO.write(image, "png", output);
+        if (HTML_VERSION) {
+            HtmlGame.generateHTML(dir, width, height, output, multiRectMap);
+        }
         System.out.println(wrap(getFont(10, i).getName()) + ": " + (i + 1) + "/" + total
                 + " in " + (System.currentTimeMillis() - start) + "ms " + FORMAT.format(System.currentTimeMillis()));
     }
 
-    private static void addLetters(Graphics2D graphics, int width, int height, int index) {
+    private static Map<String, MultiRect> addLetters(Graphics2D graphics, int width, int height, int index) {
         double screenGap = Math.max(1, Math.min(width, height) * GAP_SCREEN_RATIO);
         graphics.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY);
         graphics.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
         graphics.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_GASP);
-        ArrayList<MultiRect> multiBusy = new ArrayList<>();
+        Map<String, MultiRect> multiBusy = new LinkedHashMap<>();
         ArrayList<String> dictionary = new ArrayList<>();
         //todo: Maybe sort letters in 'emptiness' order, Where J or D is more 'interesting' than 1 of I
         long lastTime = System.currentTimeMillis();
@@ -180,8 +187,8 @@ public class ABCWallpapers {
             for (int i = 0; i < 1000000; i++) {
                 if (System.currentTimeMillis() - lastTime > 10000) {
                     if (DEBUG) {
-                    System.err.println("Emergency downscale for '" + graphics.getFont().getName() + "', size=" + size +
-                            ", dictionary=" + dictionary.size()+" of " + ABC.length());
+                        System.err.println("Emergency downscale for '" + graphics.getFont().getName() + "', size=" + size +
+                                ", dictionary=" + dictionary.size() + " of " + ABC.length());
                     }
                     fontRatio = getSmaller(fontRatio);
                     lastTime = System.currentTimeMillis();
@@ -202,14 +209,14 @@ public class ABCWallpapers {
                     y = (y / GRID_POSITION_STEP) * GRID_POSITION_STEP;
                 }
                 MultiRect cachedMultiRect = getPreciseStringMultiRect(graphics, s);
-                double localGap = Math.min(cachedMultiRect.myOuterRect.width, cachedMultiRect.myOuterRect.height)  * LOCAL_GAP_RATIO;
+                double localGap = Math.min(cachedMultiRect.myOuterRect.width, cachedMultiRect.myOuterRect.height) * LOCAL_GAP_RATIO;
                 MultiRect translatedMultiRect = cachedMultiRect.translateAndAddGap(x, y, USE_LOCAL_GAP_RATIO ? localGap : screenGap);// or gap/2 ??
 
                 if (!outerShape.contains(translatedMultiRect.myOuterRect)) continue;
-                for (MultiRect multiUsed : multiBusy) {
+                for (MultiRect multiUsed : multiBusy.values()) {
                     if (translatedMultiRect.intersects(multiUsed)) continue inner;
                 }
-                multiBusy.add(translatedMultiRect);
+                multiBusy.put(s, translatedMultiRect);
                 graphics.drawString(s, x, y);//debug
                 if (DEBUG) {
                     System.err.print(s);
@@ -246,7 +253,9 @@ public class ABCWallpapers {
         //debug drawing
 //        graphics.setColor(ABC_COLOR);
 //        graphics.fill(outerShape);
+        return multiBusy;
     }
+
     private static double getSmaller(double d) {
 //        return d * .99;
         return d * (Math.sqrt(5) - 1) / 2;//0.6180339
@@ -329,7 +338,7 @@ public class ABCWallpapers {
         return elements[R.nextInt(elements.length)];
     }
 
-    private static class MultiRect {
+    static class MultiRect {
         private final List<Rectangle2D> myList;
         private final Rectangle2D.Double myOuterRect;
 
@@ -343,6 +352,10 @@ public class ABCWallpapers {
                 maxY = Math.max(maxY, r.getY() + r.getHeight());
             }
             myOuterRect = new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
+        }
+
+        public Rectangle getBounds() {
+            return new Rectangle((int)myOuterRect.x, (int) myOuterRect.y, (int)myOuterRect.width, (int) myOuterRect.height);
         }
 
         boolean intersects(MultiRect other) {

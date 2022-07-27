@@ -1,10 +1,8 @@
 package cositas.buenas.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class FileUtil {
     public static File mkDirs(String subfolder) throws IOException {
@@ -12,5 +10,11 @@ public class FileUtil {
         if (!dir.isDirectory() && !dir.mkdirs())
             throw new IOException("Cannot make directory " + dir.getAbsolutePath());
         return dir;
+    }
+
+    public static void save(CharSequence cs, File out) throws IOException{
+        try(FileOutputStream fos = new FileOutputStream(out)) {
+            fos.write(cs.toString().getBytes());
+        }
     }
 }
