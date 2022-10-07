@@ -79,7 +79,7 @@ public class ABCWallpapers {
 
     private static boolean JUST_ONE_PICTURE = false;
 
-    private static boolean HTML_VERSION = true;
+    private static boolean HTML_VERSION = false;
 
     private static boolean EMBED_FONT_NAME = true;
 
