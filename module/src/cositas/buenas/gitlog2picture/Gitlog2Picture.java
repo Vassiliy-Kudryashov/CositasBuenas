@@ -19,7 +19,7 @@ public class Gitlog2Picture {
     static final SimpleDateFormat GIT_FORMAT = new SimpleDateFormat("E MMM d HH:mm:ss yyyy Z", Locale.getDefault());
     static final SimpleDateFormat SIMPLE_FORMAT = new SimpleDateFormat("dd.MM.yy", Locale.getDefault());
     public static final int MIN_REVISIONS_NUMBER = 5;
-    private static final double MIN_COMMITS_PER_DAY = 0.1;
+    private static final double MIN_COMMITS_PER_DAY = 0.05;
     static Map<String, String> diacritics = new HashMap<>();
 
     static {
@@ -103,11 +103,12 @@ public class Gitlog2Picture {
                 String root = roots[i];
                 String[] details = root.split("\\|");
                 String[] params = null;
+                File rootDir = root2dir.get(root);
                 if (details.length == 2) {
                     root = details[0];
                     params = details[1].split(" ");
+                    rootDir = new File(root);
                 }
-                File rootDir = root2dir.get(root);
                 ProcessBuilder.Redirect redirect = i == 0 ? ProcessBuilder.Redirect.to(logFile) : ProcessBuilder.Redirect.appendTo(logFile);
                 List<String> commands = new ArrayList<>(Arrays.asList("git", "log", "--all"));
                 if (params != null) commands.addAll(Arrays.asList(params));
@@ -277,7 +278,7 @@ public class Gitlog2Picture {
                 String fromTwoWords = fromTwoWords(words2[0], words2[1]);
                 if (fromTwoWords != null) return fromTwoWords;
             }
-            String s = capitalize(r.replaceAll("\\d+\\+?", "").replaceAll("@.*", "").replaceAll("\\(", ""));
+            String s = capitalize(r.replaceAll("\\d*\\+?", "").replaceAll("@.*", "").replaceAll("\\(", ""));
             if (/*words2.length >= 2 &&*/ s.length() > 3)
                 return s;
         }
@@ -384,8 +385,8 @@ public class Gitlog2Picture {
         Collections.reverse(ranges);
 
         int margin = 100;
-        int h = Math.max(600, Math.min(Short.MAX_VALUE / 3 * 2 - 1, 2 * margin + ranges.size() * 50));
-        int w = h * 3 / 2;
+        int h = Math.min(Short.MAX_VALUE, Math.max(600, Math.min(Short.MAX_VALUE / 3 * 2 - 1, 2 * margin + ranges.size() * 50)));
+        int w = Math.min(Short.MAX_VALUE, Math.max((int)(totalTime/86400000L) + margin * 7, h * 3 / 2));
         BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
         g.setColor(Color.WHITE);
@@ -441,14 +442,15 @@ public class Gitlog2Picture {
             float endX = margin + innerW * ((float) range.lastDate.getTime() - startTime) / totalTime;
             float startY = margin + step * i + arc;
             float endY = margin + step * (i + 1) - arc;
-            Date prevDate = null;
+//            Date prevDate = null;
             for (Date date : range.dates) {
-                if (prevDate != null) {
-                    float x1 = margin + innerW * ((float) prevDate.getTime() - startTime) / totalTime;
-                    float x2 = x1 + arc;
-                    g.fill(new RoundRectangle2D.Float(x1, startY, x2 - x1, endY - startY, arc, arc));
-                }
-                prevDate = date;
+                float x1 = margin + innerW * ((float) date.getTime() - startTime) / totalTime;
+//                if (prevDate != null) {
+//                    float x2 = x1 + arc;
+//                    g.fill(new RoundRectangle2D.Float(x1, startY, x2 - x1, endY - startY, arc, arc));
+                    g.draw(new Line2D.Float(x1, startY, x1, endY));
+//                }
+//                prevDate = date;
             }
             g.setColor(Color.black);
             int days = range.getDays();
