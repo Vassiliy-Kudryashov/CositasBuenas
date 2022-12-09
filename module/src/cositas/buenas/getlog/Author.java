@@ -36,7 +36,7 @@ class Author implements Comparable<Author> {
         if (nameAndSurname.startsWith("No Reply")) return true;
         if (nameAndSurname.startsWith("No_reply")) return true;
         if (nameAndSurname.toLowerCase().endsWith("robot")) return true;
-        if (nameAndSurname.toLowerCase().endsWith("updater")) return true;
+        if (nameAndSurname.toLowerCase().contains("updater")) return true;
         if (nameAndSurname.contains("[bot]")) return true;
         return false;
     }
