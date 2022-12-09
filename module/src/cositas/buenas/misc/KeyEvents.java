@@ -1,3 +1,5 @@
+package cositas.buenas.misc;
+
 import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -7,7 +9,7 @@ import java.awt.event.KeyEvent;
  */
 public class KeyEvents extends JFrame {
     public static void main(String[] args) {
-        System.out.println("KeyEvents #" + System.currentTimeMillis() % 222);
+        System.out.println("cositas.buenas.misc.KeyEvents #" + System.currentTimeMillis() % 222);
         KeyEvents keyEvents = new KeyEvents();
         final JLabel label = new JLabel();
         keyEvents.setContentPane(label);//////////////////////////////////////////////////////////////////////////////////
@@ -23,7 +25,7 @@ public class KeyEvents extends JFrame {
 
         Integer test_property = Integer.getInteger("test_property");
 //        List<String> test = new ArrayList<String>(test_property);
-//        ImageIcon icon = new ImageIcon(KeyEvents.class.getResource("../test.png"));
+//        ImageIcon icon = new ImageIcon(cositas.buenas.misc.KeyEvents.class.getResource("../test.png"));
         new Exception().printStackTrace();
     }
 

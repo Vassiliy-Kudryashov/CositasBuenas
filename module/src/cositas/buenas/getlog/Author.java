@@ -11,9 +11,9 @@ class Author implements Comparable<Author> {
     String nameAndSurname = "";
     Set<String> emails = new TreeSet<>();
 
-    public Author(String raw, String nameAndSurname, String nameAndSurname1) {
+    public Author(String raw, String nameAndSurname) {
         raws.add(raw);
-        nameAndSurname1 = nameAndSurname;
+        this.nameAndSurname = nameAndSurname;
         Optional.ofNullable(parseEmail(raw)).ifPresent(s -> emails.add(s));
     }
 

@@ -1,3 +1,5 @@
+package cositas.buenas.misc;
+
 import cositas.buenas.util.FileUtil;
 
 import javax.imageio.ImageIO;

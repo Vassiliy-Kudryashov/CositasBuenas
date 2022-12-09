@@ -20,8 +20,6 @@ public class Getlog {
     private static final double MIN_COMMITS_PER_DAY = 0.05;
 
 
-    static Properties config = new Properties();
-    static Properties aliases = new Properties();
 //    static List<String> bots = new ArrayList<>();
 
     private static void readLines(File source, List<String> target) throws IOException {
@@ -33,19 +31,38 @@ public class Getlog {
     }
 
     public static void main(String[] args) throws IOException, ParseException, InterruptedException {
+        String target = args.length > 0 ? args[0] : null;
+        if (target != null) {
+            proceed(target);
+        } else {
+            List<String> targets = new ArrayList<>();
+            readLines(new File("resources/getlog.targets"), targets);
+            for (String s : targets) {
+                if (s.isEmpty() || s.startsWith("#")) continue;
+                proceed(s);
+            }
+        }
+    }
+
+    private static void proceed(String target) throws IOException, InterruptedException, ParseException {
+        Properties config = new Properties();
+        Properties aliases = new Properties();
         long start;
         File baseDir = new File(new File(System.getProperty("user.home")), ".getlog").getCanonicalFile();
         String title;
-        if (args[0].contains("://") || args[0].startsWith("git@")) {
-            config.put("roots", args[0]);
-            title = GetlogUtil.getProjectNameByUrl(args[0]);
+        if (target.contains("://") || target.startsWith("git@")) {
+            config.put("roots", target);
+            title = GetlogUtil.getProjectNameByUrl(target);
             config.put("aliases", "resources/" + title + ".aliases.properties");
         } else {
-            try (FileReader reader = new FileReader(args[0])) {
+            try (FileReader reader = new FileReader(target)) {
                 config.load(reader);
             }
             title = config.getProperty("title");
         }
+        System.out.println("***");
+        System.out.println("* Proceed with " + title);
+        System.out.println("***");
         ofNullable(config.getProperty("aliases")).ifPresent(s -> {
             File file = new File(s);
             if (file.isFile()) {
@@ -109,7 +126,7 @@ public class Getlog {
             for (String line : lines) {
                 if (line.startsWith("Author:")) {
                     tmpAuthor = line.substring(8);
-                    String decodedAuthor = decode(parseNameAndSurname(tmpAuthor));
+                    String decodedAuthor = decode(parseNameAndSurname(tmpAuthor), aliases);
                     boolean isNew = allParseduthors.add(decodedAuthor);
                     String mainPart = tmpAuthor.toLowerCase() + " -> " + decodedAuthor;
                     if (!allRawAuthors.contains(mainPart)) {
@@ -118,7 +135,7 @@ public class Getlog {
                 }
                 if (line.startsWith("Date:")) {
                     tmpDate = line.substring(5).trim();
-                    Revision revision = new Revision(new Author(tmpAuthor, decode(parseNameAndSurname(tmpAuthor))), GIT_FORMAT.parse(tmpDate));
+                    Revision revision = new Revision(new Author(tmpAuthor, decode(parseNameAndSurname(tmpAuthor), aliases)), GIT_FORMAT.parse(tmpDate));
                     revisions.add(revision);
                 }
             }
@@ -197,7 +214,7 @@ public class Getlog {
         Desktop.getDesktop().open(picture);
     }
 
-    static String decode(String name) {
+    private static String decode(String name, Properties aliases) {
         return aliases.getProperty(name, name);
     }
 }

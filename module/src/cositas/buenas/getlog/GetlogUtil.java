@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class GetlogUtil {
     private static final Map<String, String> diacritics = new HashMap<>();
     static List<String> NAMES = Arrays.asList(
-            ("alena,ann,anna,alexey,arman,alexander,andrey,arsen,artem,artemii,anton,alex,alexandrina," +
+            ("alena,ann,anna,alexey,arman,alexander,andrey,arsen,artem,artemii,anton,alex,alexandrina,akif" +
                     "bas," +
                     "constantine,constantin,cyril" +
                     "denis,dmitry,dmitrii,dave,dmitri,dennis,dima,darja" +
@@ -37,6 +37,8 @@ public class GetlogUtil {
 
     static {
         diacritics.put("ž", "z");
+        diacritics.put("š", "s");
+        diacritics.put("à", "a");
         diacritics.put("ä", "a");
         diacritics.put("á", "a");
         diacritics.put("ł", "l");
