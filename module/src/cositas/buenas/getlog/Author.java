@@ -38,6 +38,7 @@ class Author implements Comparable<Author> {
         if (nameAndSurname.toLowerCase().endsWith("robot")) return true;
         if (nameAndSurname.toLowerCase().contains("updater")) return true;
         if (nameAndSurname.contains("[bot]")) return true;
+        if (nameAndSurname.contains("builduser")) return true;
         return false;
     }
 

@@ -1,14 +1,14 @@
-https://github.com/JetBrains/JetBrainsRuntime.git
-https://github.com/JetBrains/kotlin.git
-https://github.com/JetBrains/MPS.git
+https://github.com/JetBrains/intellij-community.git
+# https://github.com/JetBrains/JetBrainsRuntime.git
+# https://github.com/JetBrains/kotlin.git
+# https://github.com/JetBrains/MPS.git
 https://github.com/JetBrains/educational-plugin.git
-https://github.com/JetBrains/gradle-intellij-plugin.git
+#https://github.com/JetBrains/gradle-intellij-plugin.git
 https://github.com/JetBrains/resharper-unity.git
 https://github.com/JetBrains/intellij-scala.git
 https://github.com/JetBrains/ideavim.git
-https://github.com/JetBrains/intellij-community.git
-https://github.com/JetBrains/jetbrains_guide.git
-https://github.com/JetBrains/projector-client.git
+# https://github.com/JetBrains/jetbrains_guide.git
+# https://github.com/JetBrains/projector-client.git
 https://github.com/JetBrains/youtrack-mobile.git
 resources/compose-jb.getlog.properties
 

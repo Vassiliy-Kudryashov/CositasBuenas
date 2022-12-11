@@ -49,6 +49,7 @@ public class Getlog {
         Properties aliases = new Properties();
         long start;
         File baseDir = new File(new File(System.getProperty("user.home")), ".getlog").getCanonicalFile();
+        baseDir.mkdirs();
         String title;
         if (target.contains("://") || target.startsWith("git@")) {
             config.put("roots", target);
@@ -202,12 +203,12 @@ public class Getlog {
             System.err.println("Ranges not found");
             return;
         }
-        File picture = new File(title + ".png");
 
+        File picture;
         {
             start = System.currentTimeMillis();
             System.out.print("Saving picture...");
-            saveToImage(title, ranges, picture);
+            picture = saveToImage(title, ranges);
             System.out.println("done in " + (System.currentTimeMillis() - start) + "ms");
         }
 

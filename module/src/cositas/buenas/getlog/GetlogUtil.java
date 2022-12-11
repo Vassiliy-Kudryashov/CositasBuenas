@@ -37,22 +37,25 @@ public class GetlogUtil {
 
     static {
         diacritics.put("ž", "z");
+        diacritics.put("ż", "z");
         diacritics.put("š", "s");
         diacritics.put("à", "a");
         diacritics.put("ä", "a");
         diacritics.put("á", "a");
         diacritics.put("ł", "l");
         diacritics.put("ø", "o");
+        diacritics.put("ó", "o");
+        diacritics.put("ö", "o");
         diacritics.put("é", "e");
     }
 
     static File getRootDir(File gitLogDir, final String root) throws IOException, InterruptedException {
-        if (root.startsWith("http") || root.startsWith("git@")) {
+        if (root.contains("://") || root.startsWith("git@")) {
             String file = getProjectNameByUrl(root);
             File projectDir = new File(gitLogDir, file);
             File[] files = projectDir.listFiles();
             if (files == null || files.length == 0) {
-                Process process = new ProcessBuilder("git", "clone", root)
+                Process process = new ProcessBuilder("git", "clone", "--filter=blob:none", "--no-checkout", root)
                         .inheritIO().directory(gitLogDir).start();
                 process.waitFor(1, TimeUnit.HOURS);
             } else {
@@ -138,7 +141,12 @@ public class GetlogUtil {
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
 
-    static void saveToImage(String title, List<AuthorRange> ranges, File output) throws IOException, ParseException {
+    public static final Color startColor = new Color(46, 107, 57);
+    public static final Color endColor = new Color(108, 207, 100);
+    public static final Color projectColor = new Color(108, 207, 100, 17);
+    public static final Color slightColor = new Color(108, 207, 100, 7);
+
+    static File saveToImage(String title, List<AuthorRange> ranges) throws IOException, ParseException {
         long startTime = ranges.get(0).firstDate.getTime();
         Date theVeryLastDate = new Date(startTime);
         for (AuthorRange range : ranges) {
@@ -150,13 +158,13 @@ public class GetlogUtil {
 
         int margin = 100;
         int h = Math.min(Short.MAX_VALUE, Math.max(600, Math.min(Short.MAX_VALUE / 3 * 2 - 1, 2 * margin + ranges.size() * 50)));
-        int w = Math.min(Short.MAX_VALUE, Math.max((int) (totalTime / 86400000L) + margin * 7, h * 3 / 2));
+        int w = Math.min(Short.MAX_VALUE, Math.max((int) (totalTime / 86400000L) + margin * 8, h * 3 / 2));
         BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
         g.setColor(Color.WHITE);
-        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 25));
+        g.setFont(new Font(/*Font.SANS_SERIF*/"JetBrains Mono", Font.PLAIN, 25));
         g.fillRect(0, 0, w + 1, h + 1);
-        final int innerW = w - 7 * margin;//timeline
+        final int innerW = w - 8 * margin;//timeline
         final float pixelsPerMs = (float) innerW / totalTime;
         final int innerH = h - 2 * margin;
         final float step = (float) innerH / ranges.size();
@@ -182,11 +190,11 @@ public class GetlogUtil {
         calendar.set(Calendar.MINUTE, 0);
         int index = 0;
         while (calendar.getTime().before(new Date(theVeryLastDate.getTime() + 86400000L * 30L))) {
+            g.setColor(monthsStripes[calendar.get(Calendar.MONTH)]);
             float startX = margin + (calendar.getTimeInMillis() - startTime) * pixelsPerMs;
             calendar.add(Calendar.MONTH, 1);
             float endX = margin + (calendar.getTimeInMillis() - startTime) * pixelsPerMs;
 //            g.setColor(stripes[index]);
-            g.setColor(monthsStripes[calendar.get(Calendar.MONTH)]);
             g.fill(new Rectangle2D.Float(startX, 0, endX - startX, h));
             if (calendar.get(Calendar.MONTH) == Calendar.JANUARY) {
                 g.setColor(Color.LIGHT_GRAY);
@@ -196,8 +204,8 @@ public class GetlogUtil {
             }
             index = 1 - index;
         }
-        GradientPaint fillPaint = new GradientPaint(margin, margin, new Color(0x2e6b39),
-                w - margin, h - margin, new Color(0x6ccf64));
+        GradientPaint fillPaint
+                = new GradientPaint(margin, margin, startColor, w - margin, h - margin, endColor);
         for (int i = 0; i < ranges.size(); i++) {
             AuthorRange range = ranges.get(i);
             g.setPaint(fillPaint);
@@ -206,16 +214,29 @@ public class GetlogUtil {
             float endX = margin + innerW * ((float) range.lastDate.getTime() - startTime) / totalTime;
             float startY = margin + step * i + arc;
             float endY = margin + step * (i + 1) - arc;
+//            float r = (step-arc)/2;
+//            g.setClip(new Rectangle2D.Float(startX, startY, endX - startX, endY - startY));//experimental
 //            Date prevDate = null;
             for (Date date : range.dates) {
                 float x1 = margin + innerW * ((float) date.getTime() - startTime) / totalTime;
 //                if (prevDate != null) {
 //                    float x2 = x1 + arc;
 //                    g.fill(new RoundRectangle2D.Float(x1, startY, x2 - x1, endY - startY, arc, arc));
+                g.setPaint(fillPaint);
+//                g.setPaint(slightColor);
+
+//                g.fill(new Ellipse2D.Float(x1 - r, startY, 2 * r, endY - startY));//experimantal
                 g.draw(new Line2D.Float(x1, startY, x1, endY));
+
+                //Bottom timeline for project
+//                g.setPaint(projectColor);
+//                g.draw(new Line2D.Float(x1, h - margin + i, x1, h - margin + i + 1));
 //                }
 //                prevDate = date;
+
             }
+//            g.setClip(null);
+            g.setPaint(fillPaint);
             g.draw(new Rectangle2D.Float(startX, startY, endX - startX, endY - startY));//outer frame of the author's timeline
             g.setColor(Color.black);
             int days = range.getDays();
@@ -225,7 +246,8 @@ public class GetlogUtil {
         g.setColor(Color.black);
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 3.3f));
         g.drawString(title + " commits", 2 * margin, margin);
-
+        File output = new File(title + ".png");
         ImageIO.write(image, "png", output);
+        return output;
     }
 }
