@@ -18,6 +18,7 @@ public class Getlog {
     static final SimpleDateFormat GIT_FORMAT = new SimpleDateFormat("E MMM d HH:mm:ss yyyy Z", Locale.getDefault());
     static final SimpleDateFormat SIMPLE_FORMAT = new SimpleDateFormat("dd.MM.yy", Locale.getDefault());
 
+    //todo make it adaptive to project
     public static final int MIN_REVISIONS_NUMBER = 50;
     private static final double MIN_COMMITS_PER_DAY = 0.05;
 
@@ -81,8 +82,7 @@ public class Getlog {
 
         String[] roots = config.getProperty("roots").split(",");
         File logFile = new File(baseDir, title + ".gitlog.txt");
-        BasicFileAttributes fileAttributes = Files.readAttributes(logFile.toPath(), BasicFileAttributes.class);
-        if (!fileAttributes.isRegularFile() || fileAttributes.lastModifiedTime().toMillis() < System.currentTimeMillis() - 86400000L)
+        if (!logFile.isFile() || logFile.lastModified() < System.currentTimeMillis() - 86400000L)
         {
             Map<String, File> root2dir = new HashMap<>();
             for (String s : roots) {

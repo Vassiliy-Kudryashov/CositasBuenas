@@ -141,10 +141,11 @@ public class GetlogUtil {
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
 
-    public static final Color startColor = new Color(46, 107, 57);
-    public static final Color endColor = new Color(108, 207, 100);
-    public static final Color projectColor = new Color(108, 207, 100, 17);
-    public static final Color slightColor = new Color(108, 207, 100, 7);
+    private static final Color startColor = new Color(46, 107, 57);
+    private static final Color endColor = new Color(108, 207, 100);
+    private static final Color projectColor = new Color(108, 207, 100, 17);
+    private static final Color slightColor = new Color(108, 207, 100, 7);
+    private static final Color commitColor = new Color(46, 107, 57, 85);
 
     static File saveToImage(String title, List<AuthorRange> ranges) throws IOException, ParseException {
         long startTime = ranges.get(0).firstDate.getTime();
@@ -217,12 +218,13 @@ public class GetlogUtil {
 //            float r = (step-arc)/2;
 //            g.setClip(new Rectangle2D.Float(startX, startY, endX - startX, endY - startY));//experimental
 //            Date prevDate = null;
+            g.setColor(commitColor);
             for (Date date : range.dates) {
                 float x1 = margin + innerW * ((float) date.getTime() - startTime) / totalTime;
 //                if (prevDate != null) {
 //                    float x2 = x1 + arc;
 //                    g.fill(new RoundRectangle2D.Float(x1, startY, x2 - x1, endY - startY, arc, arc));
-                g.setPaint(fillPaint);
+//                g.setPaint(fillPaint);
 //                g.setPaint(slightColor);
 
 //                g.fill(new Ellipse2D.Float(x1 - r, startY, 2 * r, endY - startY));//experimantal

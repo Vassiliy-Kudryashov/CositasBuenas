@@ -3,15 +3,17 @@ https://github.com/JetBrains/JetBrainsRuntime.git
 https://github.com/JetBrains/kotlin.git
 https://github.com/JetBrains/MPS.git
 https://github.com/JetBrains/educational-plugin.git
+https://github.com/JetBrains/intellij-scala.git
+https://github.com/JetBrains/kotlin-native.git
+
+# https://github.com/jetbrains-academy/pycharm-courses.git
 # https://github.com/JetBrains/gradle-intellij-plugin.git
 # https://github.com/JetBrains/resharper-unity.git
-https://github.com/JetBrains/intellij-scala.git
 # https://github.com/JetBrains/ideavim.git
 # https://github.com/JetBrains/jetbrains_guide.git
 # https://github.com/JetBrains/projector-client.git
-# https://github.com/JetBrains/youtrack-mobile.git
 # resources/compose-jb.getlog.properties
-
+# https://github.com/JetBrains/youtrack-mobile.git
 # https://github.com/JetBrains/toolbox-browser-extension.git
 # https://github.com/JetBrains/intellij-plugin-verifier.git
 # https://github.com/JetBrains/JetBrainsMono.git
@@ -22,6 +24,9 @@ https://github.com/JetBrains/intellij-plugins.git
 # https://github.com/JetBrains/svg-sprite-loader.git
 https://github.com/JetBrains/kotlin-web-site.git
 
+
+https://github.com/jlink/jqwik.git
+https://github.com/chubin/cheat.sh.git
 https://github.com/apache/httpd.git
 # https://github.com/gorhill/uBlock.git
 # https://github.com/google/guava.git

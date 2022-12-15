@@ -70,7 +70,7 @@ class Author implements Comparable<Author> {
         for (String email : author.emails) {
             String localPart = getLocalPart(email);
             if (localPart != null) {
-                if (emails.contains(email)) {
+                if (emails.contains(email) || emails.contains(email.replace('-', '.'))) {
                     return true;
                 }
                 String[] words = nameAndSurname.split(" ");
@@ -82,7 +82,7 @@ class Author implements Comparable<Author> {
         for (String email : emails) {
             String localPart = getLocalPart(email);
             if (localPart != null) {
-                if (author.emails.contains(email)) {
+                if (author.emails.contains(email) || author.emails.contains(email.replace('-','.'))) {
                     return true;
                 }
                 String[] words = author.nameAndSurname.split(" ");
