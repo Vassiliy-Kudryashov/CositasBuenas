@@ -1,30 +1,30 @@
 https://github.com/JetBrains/intellij-community.git
-# https://github.com/JetBrains/JetBrainsRuntime.git
-# https://github.com/JetBrains/kotlin.git
-# https://github.com/JetBrains/MPS.git
+https://github.com/JetBrains/JetBrainsRuntime.git
+https://github.com/JetBrains/kotlin.git
+https://github.com/JetBrains/MPS.git
 https://github.com/JetBrains/educational-plugin.git
-#https://github.com/JetBrains/gradle-intellij-plugin.git
-https://github.com/JetBrains/resharper-unity.git
+# https://github.com/JetBrains/gradle-intellij-plugin.git
+# https://github.com/JetBrains/resharper-unity.git
 https://github.com/JetBrains/intellij-scala.git
-https://github.com/JetBrains/ideavim.git
+# https://github.com/JetBrains/ideavim.git
 # https://github.com/JetBrains/jetbrains_guide.git
 # https://github.com/JetBrains/projector-client.git
-https://github.com/JetBrains/youtrack-mobile.git
-resources/compose-jb.getlog.properties
+# https://github.com/JetBrains/youtrack-mobile.git
+# resources/compose-jb.getlog.properties
 
 # https://github.com/JetBrains/toolbox-browser-extension.git
 # https://github.com/JetBrains/intellij-plugin-verifier.git
 # https://github.com/JetBrains/JetBrainsMono.git
 # https://github.com/JetBrains/intellij-platform-plugin-template.git
 # https://github.com/JetBrains/intellij-micropython.git
-# https://github.com/JetBrains/intellij-plugins.git
+https://github.com/JetBrains/intellij-plugins.git
 # https://github.com/JetBrains/svg-mixer.git
 # https://github.com/JetBrains/svg-sprite-loader.git
-# https://github.com/JetBrains/kotlin-web-site.git
+https://github.com/JetBrains/kotlin-web-site.git
 
 https://github.com/apache/httpd.git
-https://github.com/gorhill/uBlock.git
-https://github.com/google/guava.git
+# https://github.com/gorhill/uBlock.git
+# https://github.com/google/guava.git
 
 # https://github.com/apache/tomcat.git
 # https://github.com/apache/logging-log4j2.git
@@ -32,7 +32,7 @@ https://github.com/google/guava.git
 # https://github.com/tensorflow/tensorflow.git
 # https://git.eclipse.org/r/rcptt/org.eclipse.rcptt.git
 # https://github.com/d3/d3.git
-# resources/bugzilla.getlog.properties
-# https://github.com/apache/netbeans.git
+resources/bugzilla.getlog.properties
+https://github.com/apache/netbeans.git
 # https://github.com/ben-manes/caffeine.git
 # https://github.com/apache/commons-collections.git
