@@ -2,6 +2,8 @@ package cositas.buenas.getlog;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -16,7 +18,7 @@ public class Getlog {
     static final SimpleDateFormat GIT_FORMAT = new SimpleDateFormat("E MMM d HH:mm:ss yyyy Z", Locale.getDefault());
     static final SimpleDateFormat SIMPLE_FORMAT = new SimpleDateFormat("dd.MM.yy", Locale.getDefault());
 
-    public static final int MIN_REVISIONS_NUMBER = 5;
+    public static final int MIN_REVISIONS_NUMBER = 50;
     private static final double MIN_COMMITS_PER_DAY = 0.05;
 
 
@@ -64,6 +66,7 @@ public class Getlog {
         System.out.println("***");
         System.out.println("* Proceed with " + title);
         System.out.println("***");
+        //todo experimental auto-merge
         ofNullable(config.getProperty("aliases")).ifPresent(s -> {
             File file = new File(s);
             if (file.isFile()) {
@@ -78,6 +81,8 @@ public class Getlog {
 
         String[] roots = config.getProperty("roots").split(",");
         File logFile = new File(baseDir, title + ".gitlog.txt");
+        BasicFileAttributes fileAttributes = Files.readAttributes(logFile.toPath(), BasicFileAttributes.class);
+        if (!fileAttributes.isRegularFile() || fileAttributes.lastModifiedTime().toMillis() < System.currentTimeMillis() - 86400000L)
         {
             Map<String, File> root2dir = new HashMap<>();
             for (String s : roots) {
@@ -181,8 +186,16 @@ public class Getlog {
                 AuthorRange base = ranges.get(i);
                 for (int j = i + 1; j < ranges.size(); j++) {
                     AuthorRange range = ranges.get(j);
-                    if (base.author.compareTo(range.author) == 0) {
+                    if (base.author.isSimilarTo(range.author)) {
+                        System.out.println(base.author + "\n + \n" + range.author);
                         base.merge(range);
+                        String tmp = base.author.toString();
+                        for (int k = 0; k < tmp.length(); k++) {
+                            System.out.print('=');
+                        }
+                        System.out.println();
+                        System.out.println(tmp+"\n");
+
                         ranges.remove(j);
                         j--;
                     }

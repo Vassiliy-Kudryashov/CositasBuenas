@@ -81,7 +81,7 @@ public class GetlogUtil {
         int start = raw.lastIndexOf('<');
         if (start == -1) return null;
         int stop = raw.indexOf('>', start);
-        if (stop == -1) return null;
+        if (stop == -1 || stop == start + 1) return null;
         return raw.substring(start + 1, stop);
     }
 
@@ -241,7 +241,7 @@ public class GetlogUtil {
             g.setColor(Color.black);
             int days = range.getDays();
             double cpd = range.getCommitsPerDay();
-            g.drawString("" + range.author + " (" + days + " days, \u03b7=" + String.format("%.2f", cpd) + ") ", endX + step, endY - arc);
+            g.drawString("" + range.author.nameAndSurname + " (" + days + " days, \u03b7=" + String.format("%.2f", cpd) + ") ", endX + step, endY - arc);
         }
         g.setColor(Color.black);
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 3.3f));
