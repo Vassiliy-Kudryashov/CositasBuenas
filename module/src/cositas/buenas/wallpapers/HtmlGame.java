@@ -25,7 +25,7 @@ public class HtmlGame {
                     "  }\n" +
                     "</script>\n";
 
-    public static void generateHTML(File dir, int width, int height, File imageFile, Map<String, ABCWallpapers.MultiRect> multiRectMap) throws IOException {
+    public static void generateHTML(File dir, int width, int height, File imageFile, Map<String, MultiRect> multiRectMap) throws IOException {
         File out = new File(dir, imageFile.getName() + ".html");
         StringBuilder sb = new StringBuilder("<html>\n<head>\n" + SCRIPT + "</head>\n<body style=\"margin:0;\">\n");
         sb.append("<img width=\"100%\" height=\"100%\" src=\"").append(imageFile.getName()).append("\" usemap=\"#abc\">\n");
@@ -38,7 +38,7 @@ public class HtmlGame {
         });
 
         for (String key : ordered) {
-            ABCWallpapers.MultiRect multiRect = multiRectMap.get(key);
+            MultiRect multiRect = multiRectMap.get(key);
             Rectangle bounds = multiRect.getBounds();
             //todo coords in %%
             sb.append("<div id=\"abc_").append(counter).append("\" onClick=process('").append(counter).append("') style=\"position:fixed;")
