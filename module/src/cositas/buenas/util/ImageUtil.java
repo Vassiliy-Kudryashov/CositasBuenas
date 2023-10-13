@@ -1,6 +1,10 @@
 package cositas.buenas.util;
 
-import javax.imageio.*;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
@@ -8,13 +12,10 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class ImageUtil {
 //        if (args.length == 1) {
 //            convert(Paths.get(args[0]).toFile());
 //        }
-        showDuplicatesAsHTML(new File(new File(System.getProperty("user.home"), "Pictures"),"Cats"));
+        showDuplicatesAsHTML(new File(new File(new File(System.getProperty("user.home")), "Pictures"),"Cats"));
     }
 
     private static void convert(File file) throws IOException {
