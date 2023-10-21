@@ -1,42 +1,19 @@
 package cositas.buenas.misc;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.locks.LockSupport;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class KotovasiaGetter {
-    static final List<String> SUFFIXES = Arrays.asList("au", "", "br", "ca", "cn2", "ae", "de", "hk", "blr", "id", "jp", "ma", "mx", "nj", "ng", "pk", "ph", "ru", "sa", "sg", "za", "se-rd", "tr", "uk");
-
-    static void switchToRandomProxy() {
-        String suffix = SUFFIXES.get(new Random().nextInt(SUFFIXES.size()));
-        System.setProperty("java.net.useSystemProxies", "true");
-        System.setProperty("http.proxyHost", "proxy" + suffix + ".huawei.com");
-        System.setProperty("http.proxyPort", "8080");
-        System.setProperty("https.proxyHost", "proxy" + suffix + ".huawei.com");
-        System.setProperty("https.proxyPort", "8080");
-    }
 
     public static void main(String[] args) throws IOException {
-//        switchToRandomProxy();
-//        System.setProperty("java.net.useSystemProxies", "true");
-//        System.setProperty("http.proxyHost", "proxyuk.huawei.com");
-//        System.setProperty("http.proxyPort", "8080");
-//        System.setProperty("https.proxyHost", "proxyuk.huawei.com");
-//        System.setProperty("https.proxyPort", "8080");
         File dir = new File(new File(new File(System.getProperty("user.home")),"Pictures"), "Cats");
         dir.mkdirs();
-        String url = "https://dok-zlo.livejournal.com/tag/%D1%8E%D0%BC%D0%BE%D1%80";
+        String url = "https://dok-zlo.livejournal.com/";//tag/%D1%8E%D0%BC%D0%BE%D1%80
 //        url = "https://dok-zlo.livejournal.com/2022/08/19/";//initial
         Pattern postPattern = Pattern.compile("<a href=\"(https://dok-zlo\\.livejournal\\.com/\\d+\\.html)\" class=\"subj-link\"[^>]+>Котовасия</a>");
         Pattern imgPattern = Pattern.compile("(https://ic\\.pics\\.livejournal\\.com/dok_zlo/\\d+/\\d+/\\d+_[^.]+\\.jpg)");
@@ -51,12 +28,17 @@ public class KotovasiaGetter {
                 System.out.println(postUrl);
                 Matcher innerMatcher = imgPattern.matcher(post);
                 while (innerMatcher.find()) {
-                    String imgURL = innerMatcher.group(1).replace("_600", "_original");
+                    String imgURL = innerMatcher.group(1).replaceAll("_\\d+", "_original");
                     int i = imgURL.lastIndexOf("/");
                     int j = imgURL.lastIndexOf("_");
                     if (i > 0 && j > i) {
                         File file = new File(dir, imgURL.substring(i + 1, j) + ".jpg");
-                        if (file.isFile()) continue;
+                        if (file.isFile()) {
+//                            System.out.println("STOP, " + file+" already exists");
+//                            return;
+                            System.out.println("skip, " + file+" already exists");
+                            continue;
+                        }
                         byte[] imageBytes = loadBytes(imgURL);
                         System.out.println(file.getAbsolutePath());
                         try (FileOutputStream fos = new FileOutputStream(file)) {
@@ -94,7 +76,7 @@ public class KotovasiaGetter {
             try {
                 URL url = new URL(link);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Useg-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36");
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36");
                 boolean redirect = false;
 
                 int status = conn.getResponseCode();
