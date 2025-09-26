@@ -40,12 +40,14 @@ public class StarWars {
                 }
                 double ohMyAbs = Math.abs(1 - Math.abs(.5 - levelOfEverything));
                 feastBothEars(ch, request, 40 + (int) (Math.random() * 30), 30 + (int)(70 * ohMyAbs), queueOfEverything);
-                LockSupport.parkUntil(System.currentTimeMillis() + (int) (250 * levelOfEverything));
-                feastBothEars(ch, response, 52 + (int) (Math.random() * 20), 30 + (int)(70 * ohMyAbs), queueOfEverything);
-                if (Math.random() > 0.75) {
-                    feastBothEars(ch, errorCode, 35 + (int) (Math.random() * 40), 60 + (int)(40 * ohMyAbs), queueOfEverything);
+                if (Math.random() > 0.5) {
+                    LockSupport.parkUntil(System.currentTimeMillis() + (int) (250 * levelOfEverything));
+                    feastBothEars(ch, response, 32 + (int) (Math.random() * 44), 30 + (int) (70 * ohMyAbs), queueOfEverything);
+                    if (Math.random() > 0.5) {
+                        feastBothEars(ch, errorCode, 35 + (int) (Math.random() * 40), 60 + (int)(40 * ohMyAbs), queueOfEverything);
+                    }
+                    LockSupport.parkUntil(System.currentTimeMillis() + (int) (200 * levelOfEverything));
                 }
-                LockSupport.parkUntil(System.currentTimeMillis() + (int) (200 * levelOfEverything));
                 while (queueOfEverything.size() > 18) {
                     ch.noteOff(queueOfEverything.removeFirst());
                 }
