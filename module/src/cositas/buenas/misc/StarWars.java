@@ -12,8 +12,8 @@ public class StarWars {
         try (Synthesizer s = MidiSystem.getSynthesizer()) {
             s.open();
             MidiChannel ch = s.getChannels()[0];
-            FloatControl balance = getBalanceControl();
-            if (balance == null) {
+            FloatControl earGear = findTheBalance();
+            if (earGear == null) {
                 System.err.println("Sorry, I lost my balance");
                 System.exit(42);
             }
@@ -22,31 +22,32 @@ public class StarWars {
             Instrument response = Arrays.stream(s.getAvailableInstruments()).filter(i -> i.getName().contains("eaming")).findFirst().get();
             Instrument errorCode = Arrays.stream(s.getAvailableInstruments()).filter(i -> i.getName().contains("ghing")).findFirst().get();
 
-            LinkedList<Integer> queue = new LinkedList<>();
-            double level = 0.5;
-            double speed = 1;
+            LinkedList<Integer> queueOfEverything = new LinkedList<>();
+            double levelOfEverything = 0.5;
+            double speedOfEverything = 1;
             final double step = 1.05;
             while (true) {
-                level = Math.min(1, Math.max(0, level * speed));
-                balance.setValue(-1 + 2 * (float)level);
+                levelOfEverything = Math.min(1, Math.max(0, levelOfEverything * speedOfEverything));
+                earGear.setValue(-1 + 2 * (float)levelOfEverything);
 
-                if (Math.random() > level) {
-                    speed *= step;
-                    LockSupport.parkUntil(System.currentTimeMillis() + (int) (1000 * level));
+                if (Math.random() > levelOfEverything) {
+                    speedOfEverything *= step;
+                    LockSupport.parkUntil(System.currentTimeMillis() + (int) (1000 * levelOfEverything));
                     continue;
                 } else {
-                    speed /= step;
-                    speed /= step;
+                    speedOfEverything /= step;
+                    speedOfEverything /= step;
                 }
-                submit(ch, request, 52 + (int) (Math.random() * 20), 30 + (int)(70 * Math.abs(1 - Math.abs(.5 - level))), queue);
-                LockSupport.parkUntil(System.currentTimeMillis() + (int) (250 * level));
-                submit(ch, response, 52 + (int) (Math.random() * 20), 30 + (int)(70 *  Math.abs(1 - Math.abs(.5 - level))), queue);
+                double ohMyAbs = Math.abs(1 - Math.abs(.5 - levelOfEverything));
+                feastBothEars(ch, request, 40 + (int) (Math.random() * 30), 30 + (int)(70 * ohMyAbs), queueOfEverything);
+                LockSupport.parkUntil(System.currentTimeMillis() + (int) (250 * levelOfEverything));
+                feastBothEars(ch, response, 52 + (int) (Math.random() * 20), 30 + (int)(70 * ohMyAbs), queueOfEverything);
                 if (Math.random() > 0.75) {
-                    submit(ch, errorCode, 35 + (int) (Math.random() * 40), 60 + (int)(40 * Math.abs(1 - Math.abs(.5 - level))), queue);
+                    feastBothEars(ch, errorCode, 35 + (int) (Math.random() * 40), 60 + (int)(40 * ohMyAbs), queueOfEverything);
                 }
-                LockSupport.parkUntil(System.currentTimeMillis() + (int) (200 * level));
-                while (queue.size() > 18) {
-                    ch.noteOff(queue.removeFirst());
+                LockSupport.parkUntil(System.currentTimeMillis() + (int) (200 * levelOfEverything));
+                while (queueOfEverything.size() > 18) {
+                    ch.noteOff(queueOfEverything.removeFirst());
                 }
             }
         } catch (MidiUnavailableException e1) {
@@ -56,7 +57,7 @@ public class StarWars {
         }
     }
 
-    private static FloatControl getBalanceControl() {
+    private static FloatControl findTheBalance() {
         Mixer.Info[] infos = AudioSystem.getMixerInfo();
         for (Mixer.Info info : infos) {
             for (Line line : AudioSystem.getMixer(info).getSourceLines()) {
@@ -69,9 +70,9 @@ public class StarWars {
         return null;
     }
 
-    private static void submit(MidiChannel channel, Instrument instrument, int note, int level, List<Integer> queue) {
+    private static void feastBothEars(MidiChannel channel, Instrument instrument, int note, int ohMyAbs, List<Integer> queue) {
         channel.programChange(instrument.getPatch().getBank(), instrument.getPatch().getProgram());
-        channel.noteOn(note, level);
+        channel.noteOn(note, ohMyAbs);
         queue.add(note);
     }
 }
